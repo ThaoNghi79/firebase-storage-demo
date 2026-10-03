@@ -258,6 +258,7 @@ Phải đảm bảo Terminal chạy `firebase emulators:start` vẫn đang mở.
 - Rules chưa kiểm tra `email_verified`, nên ai cũng có thể tự đăng ký email đuôi `@student.tdtu.edu.vn`.
 - Token của Auth Emulator không có chữ ký, chỉ Emulator chấp nhận.
 - Tên file có dấu tiếng Việt hoặc ký tự đặc biệt (`#`, `?`) chưa được mã hóa.
+- Download URL không có hạn dùng và demo chưa có chức năng thu hồi. Trong Emulator, link chỉ hết dùng được khi xóa file trên Emulator UI hoặc tắt Emulator. Khi chạy thật, có thể thu hồi bằng nút Revoke trên Firebase Console; muốn link tự hết hạn thì dùng Signed URL của Google Cloud Storage (tạo bằng Admin SDK, đặt được thời hạn), hoặc không phát link mà chỉ cho tải qua backend.
 
 **Khi lên production:**
 1. Tạo project trên [Firebase Console](https://console.firebase.google.com/), nâng gói Blaze.
