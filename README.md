@@ -275,11 +275,6 @@ Phải đảm bảo Terminal chạy `firebase emulators:start` vẫn đang mở.
 - demo.html cần có mạng để tải Firebase SDK từ CDN.
 - demo.html hiện thông báo "bị chặn" cho mọi lỗi của Storage, kể cả khi file không tồn tại; cần xem dòng `Lỗi:` để biết nguyên nhân thật.
 
-*Backend*
-- Mỗi request backend đăng nhập lại một lần, chưa giữ lại token để dùng tiếp.
-- Backend đọc toàn bộ file vào bộ nhớ khi upload và download, chưa phù hợp với file lớn; chưa hỗ trợ upload nối tiếp khi rớt mạng.
-- Upload qua backend luôn gửi Content-Type `application/octet-stream`, Storage không lưu đúng loại file.
-
 **Khi lên production:**
 1. Tạo project trên [Firebase Console](https://console.firebase.google.com/), nâng gói Blaze.
 2. Bật Authentication (Email/Password) và Storage.
