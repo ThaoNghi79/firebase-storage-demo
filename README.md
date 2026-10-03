@@ -4,7 +4,7 @@ Demo cho seminar **Service-Oriented Architecture**: Firebase Storage (File stora
 
 - Thành viên: Thảo Nghi (524H0019), Như Quỳnh (524H0027)
 
-Demo chạy hoàn toàn trên máy bằng **Firebase Local Emulator Suite** (Auth + Storage). Không cần tạo project trên Firebase Console, không cần đăng nhập Google, không cần thẻ thanh toán.
+Demo chạy hoàn toàn trên máy bằng **Firebase Local Emulator Suite** (Auth + Storage).
 
 ---
 
