@@ -1,0 +1,14 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Firebase Emulator
+*-debug.log
+emulator-data/
+.firebase/
+
+# Hệ điều hành / editor
+.DS_Store
+Thumbs.db
+.vscode/

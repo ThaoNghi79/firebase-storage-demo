@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Demo Firebase Storage - Phân quyền Student/Teacher</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    margin: 0;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+  }
+  .container {
+    max-width: 620px;
+    width: 100%;
+  }
+  h1 {
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+  p.subtitle {
+    color: #94a3b8;
+    margin-top: 0;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 14px 0;
+    color: #93c5fd;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    color: #94a3b8;
+    margin-bottom: 4px;
+    margin-top: 10px;
+  }
+  input[type="text"], input[type="password"], input[type="file"] {
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 6px;
+    border: 1px solid #475569;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-size: 14px;
+  }
+  button {
+    margin-top: 14px;
+    padding: 9px 18px;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:hover { background: #1d4ed8; }
+  button:disabled { background: #475569; cursor: not-allowed; }
+  button.secondary { background: #334155; }
+  button.secondary:hover { background: #475569; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .status {
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: 'Consolas', monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+    display: none;
+  }
+  .status.show { display: block; }
+  .status.ok { background: #052e1a; border: 1px solid #16a34a; color: #86efac; }
+  .status.fail { background: #2e0505; border: 1px solid #dc2626; color: #fca5a5; }
+  .status.info { background: #1e293b; border: 1px solid #475569; color: #cbd5e1; }
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+  .badge.logged { background: #052e1a; color: #86efac; border: 1px solid #16a34a; }
+  .badge.out { background: #334155; color: #94a3b8; }
+  .quick-accounts {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .quick-accounts button {
+    margin-top: 0;
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔥 Demo: Firebase Storage — Phân quyền theo domain email</h1>
+  <p class="subtitle">Kết nối trực tiếp vào Firebase Emulator đang chạy trên máy (localhost)</p>
+
+  <div class="card">
+    <h2>1. Đăng nhập <span id="loginBadge" class="badge out">Chưa đăng nhập</span></h2>
+
+    <div class="quick-accounts">
+      <button class="secondary" onclick="fillAccount('sv1@student.tdtu.edu.vn')">Dùng: Student</button>
+      <button class="secondary" onclick="fillAccount('gv1@tdtu.edu.vn')">Dùng: Teacher</button>
+      <button class="secondary" onclick="fillAccount('test@gmail.com')">Dùng: Gmail lạ</button>
+    </div>
+
+    <label>Email</label>
+    <input type="text" id="email" placeholder="vd: sv1@student.tdtu.edu.vn">
+
+    <label>Password</label>
+    <input type="password" id="password" placeholder="123456">
+
+    <div class="row">
+      <button onclick="doLogin()">Đăng nhập</button>
+      <button class="secondary" onclick="doLogout()">Đăng xuất</button>
+    </div>
+
+    <div id="loginStatus" class="status"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Upload file (quyền: chỉ Student được phép)</h2>
+    <input type="file" id="fileInput">
+    <button onclick="doUpload()">Upload lên /files/</button>
+    <div id="uploadStatus" class="status"></div>
+  </div>
+
+  <div class="card">
+    <h2>3. Download file (quyền: Student + Teacher được phép)</h2>
+    <label>Tên file muốn tải (đúng tên đã upload)</label>
+    <input type="text" id="downloadName" placeholder="vd: HelloWorld.java">
+    <div class="row">
+      <button onclick="doDownload()">Tải xuống</button>
+      <button class="secondary" onclick="doGetUrl()">Lấy Download URL</button>
+    </div>
+    <div id="downloadStatus" class="status"></div>
+  </div>
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage-compat.js"></script>
+
+<script>
+
+  const PROJECT_ID = "default" // Để tên hiển thị trên trang emulator
+
+
+  const firebaseConfig = {
+    apiKey: "fake-api-key",
+    projectId: PROJECT_ID,
+    storageBucket: `${PROJECT_ID}.appspot.com`
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  
+  firebase.auth().useEmulator("http://127.0.0.1:9099");
+  firebase.storage().useEmulator("127.0.0.1", 9199);
+
+  const auth = firebase.auth();
+  const storage = firebase.storage();
+
+  function fillAccount(email) {
+    document.getElementById("email").value = email;
+    document.getElementById("password").value = "123456";
+  }
+
+  function showStatus(elId, message, type) {
+    const el = document.getElementById(elId);
+    el.textContent = message;
+    el.className = "status show " + type;
+  }
+
+  function updateLoginBadge() {
+    const badge = document.getElementById("loginBadge");
+    const user = auth.currentUser;
+    if (user) {
+      badge.textContent = "Đã đăng nhập: " + user.email;
+      badge.className = "badge logged";
+    } else {
+      badge.textContent = "Chưa đăng nhập";
+      badge.className = "badge out";
+    }
+  }
+
+  async function doLogin() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      showStatus("loginStatus", "Đăng nhập thành công: " + email, "ok");
+    } catch (err) {
+      showStatus("loginStatus", "Đăng nhập thất bại: " + err.message, "fail");
+    }
+    updateLoginBadge();
+  }
+
+  async function doLogout() {
+    await auth.signOut();
+    showStatus("loginStatus", "Đã đăng xuất.", "info");
+    updateLoginBadge();
+  }
+
+  async function doUpload() {
+    const user = auth.currentUser;
+    if (!user) {
+      showStatus("uploadStatus", "Chưa đăng nhập.", "fail");
+      return;
+    }
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
+    if (!file) {
+      showStatus("uploadStatus", "Chưa chọn file.", "fail");
+      return;
+    }
+    const ref = storage.ref("files/" + file.name);
+    try {
+      await ref.put(file);
+      showStatus("uploadStatus", `Upload thành công: files/${file.name}\n(Tài khoản: ${user.email})`, "ok");
+    } catch (err) {
+      showStatus("uploadStatus", `Upload bị chặn (Permission Denied)\nTài khoản: ${user.email}\nLỗi: ${err.message}`, "fail");
+    }
+  }
+
+  async function doDownload() {
+    const user = auth.currentUser;
+    if (!user) {
+      showStatus("downloadStatus", "Chưa đăng nhập.", "fail");
+      return;
+    }
+    const name = document.getElementById("downloadName").value.trim();
+    if (!name) {
+      showStatus("downloadStatus", "Chưa nhập tên file.", "fail");
+      return;
+    }
+    const ref = storage.ref("files/" + name);
+    try {
+      const url = await ref.getDownloadURL();
+      // Tải file thật về máy (không mở tab mới): lấy dữ liệu rồi lưu bằng tên gốc
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const blob = await res.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      showStatus("downloadStatus", `Tải thành công! File đã lưu về máy: ${name}\nTài khoản: ${user.email}`, "ok");
+    } catch (err) {
+      const blocked = err.code && err.code.startsWith("storage/");
+      showStatus("downloadStatus", `${blocked ? "Tải bị chặn (Permission Denied)" : "Tải thất bại"}\nTài khoản: ${user.email}\nLỗi: ${err.message}`, "fail");
+    }
+  }
+
+  async function doGetUrl() {
+    const user = auth.currentUser;
+    if (!user) {
+      showStatus("downloadStatus", "Chưa đăng nhập.", "fail");
+      return;
+    }
+    const name = document.getElementById("downloadName").value.trim();
+    if (!name) {
+      showStatus("downloadStatus", "Chưa nhập tên file.", "fail");
+      return;
+    }
+    const ref = storage.ref("files/" + name);
+    try {
+      const url = await ref.getDownloadURL();
+      showStatus("downloadStatus", `Download URL:\n${url}\nTài khoản: ${user.email}`, "ok");
+    } catch (err) {
+      showStatus("downloadStatus", `Lấy URL bị chặn (Permission Denied)\nTài khoản: ${user.email}\nLỗi: ${err.message}`, "fail");
+    }
+  }
+
+  auth.onAuthStateChanged(updateLoginBadge);
+</script>
+</body>
+</html>
