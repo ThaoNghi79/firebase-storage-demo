@@ -202,7 +202,6 @@ Có 3 role được cấu hình sẵn trong `main.py`: `student`, `teacher`, `ou
 | `GET /files/{filename}` | Try it out → nhập `role` → nhập tên file đã upload → Execute → bấm **Download file** | Tải nội dung file |
 | `GET /files/{filename}/url` | Try it out → nhập `role` → nhập tên file đã upload → Execute | JSON chứa `download_url` (link tải kèm token) |
 
-> Nên dùng file tên không dấu, không ký tự đặc biệt, ví dụ `HelloWorld.java`.
 
 **Cách backend hoạt động:** backend tra bảng `ACCOUNTS` theo `role`, tự đăng nhập vào Auth Emulator để lấy ID token, rồi gửi request sang Storage Emulator kèm header `Authorization: Firebase <idToken>`. Backend không tự quyết định quyền; `storage.rules` quyết định. Truyền `role` qua query chỉ là cách làm tắt cho demo.
 
