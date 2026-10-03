@@ -253,12 +253,32 @@ Phải đảm bảo Terminal chạy `firebase emulators:start` vẫn đang mở.
 ## 9. Giới hạn của demo và khi lên production
 
 **Giới hạn của demo:**
-- Backend giữ sẵn mật khẩu tài khoản test và nhận `role` qua query chỉ để demo cho nhanh.
-- Mọi người dùng chung đường dẫn `files/{fileName}`, nên Student có thể ghi đè hoặc xóa file của Student khác.
+
+*Phân quyền và bảo mật*
+- Backend giữ sẵn mật khẩu tài khoản test và nhận `role` qua query chỉ để demo cho nhanh. Ai gọi API cũng có thể chọn role bất kỳ.
+- Chỉ phân quyền theo domain email, chưa phân quyền theo từng người (danh sách email cụ thể hoặc custom claims).
 - Rules chưa kiểm tra `email_verified`, nên ai cũng có thể tự đăng ký email đuôi `@student.tdtu.edu.vn`.
 - Token của Auth Emulator không có chữ ký, chỉ Emulator chấp nhận.
-- Tên file có dấu tiếng Việt hoặc ký tự đặc biệt (`#`, `?`) chưa được mã hóa.
-- Download URL không có hạn dùng và demo chưa có chức năng thu hồi. Trong Emulator, link chỉ hết dùng được khi xóa file trên Emulator UI hoặc tắt Emulator. Khi chạy thật, có thể thu hồi bằng nút Revoke trên Firebase Console; muốn link tự hết hạn thì dùng Signed URL của Google Cloud Storage (tạo bằng Admin SDK, đặt được thời hạn), hoặc không phát link mà chỉ cho tải qua backend.
+- Download URL không có hạn dùng và demo chưa có chức năng thu hồi. Trong Emulator, link chỉ hết dùng được khi xóa file trên Emulator UI hoặc tắt Emulator. Khi chạy thật, có thể thu hồi bằng nút Revoke trên Firebase Console; muốn link tự hết hạn thì dùng Signed URL của Google Cloud Storage (tạo bằng Admin SDK, đặt được thời hạn), hoặc không phát link mà chỉ cho tải qua backend (`GET /files/{filename}` kiểm tra quyền ở mọi lần tải).
+
+*Quản lý file*
+- Mọi người dùng chung đường dẫn `files/{fileName}`, nên Student có thể ghi đè hoặc xóa file của Student khác.
+- Upload file trùng tên sẽ ghi đè file cũ mà không báo trước.
+- Chưa giới hạn dung lượng và loại file được upload.
+- Chưa có chức năng xóa file trong API và demo.html, dù rules vẫn cho Student xóa (vì quyền `write` gồm cả xóa).
+- Chưa lưu thông tin về file (ai upload, lúc nào) vào database; thực tế thường lưu file ở Storage và lưu thông tin này ở Firestore.
+- Khi tải qua FastAPI, tên file có một số chữ có dấu (ví dụ ậ, ơ, ư, đ) hoặc ký tự đặc biệt (`#`, `?`) có thể bị lỗi vì backend chưa mã hóa tên file. demo.html không bị lỗi này.
+
+*Môi trường chạy*
+- Dữ liệu Emulator nằm trong bộ nhớ: tắt Emulator là mất hết tài khoản và file, mỗi lần chạy lại phải tạo tài khoản bằng tay (có thể giữ lại bằng `firebase emulators:start --import ./emulator-data --export-on-exit`).
+- Demo chỉ chạy trên máy (localhost), chưa deploy nên người khác không truy cập được.
+- demo.html cần có mạng để tải Firebase SDK từ CDN.
+- demo.html hiện thông báo "bị chặn" cho mọi lỗi của Storage, kể cả khi file không tồn tại; cần xem dòng `Lỗi:` để biết nguyên nhân thật.
+
+*Backend*
+- Mỗi request backend đăng nhập lại một lần, chưa giữ lại token để dùng tiếp.
+- Backend đọc toàn bộ file vào bộ nhớ khi upload và download, chưa phù hợp với file lớn; chưa hỗ trợ upload nối tiếp khi rớt mạng.
+- Upload qua backend luôn gửi Content-Type `application/octet-stream`, Storage không lưu đúng loại file.
 
 **Khi lên production:**
 1. Tạo project trên [Firebase Console](https://console.firebase.google.com/), nâng gói Blaze.
