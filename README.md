@@ -250,7 +250,7 @@ Phải đảm bảo Terminal chạy `firebase emulators:start` vẫn đang mở.
 
 ---
 
-## 9. Giới hạn của demo và khi lên production
+## 9. Giới hạn của demo
 
 **Giới hạn của demo:**
 
