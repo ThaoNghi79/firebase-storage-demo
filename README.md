@@ -18,7 +18,7 @@ Demo chạy hoàn toàn trên máy bằng **Firebase Local Emulator Suite** (Aut
 6. [Test bằng trang web demo.html](#6-test-bằng-trang-web-demohtml)
 7. [Kết quả mong đợi](#7-kết-quả-mong-đợi)
 8. [Lỗi thường gặp](#8-lỗi-thường-gặp)
-9. [Giới hạn của demo và khi lên production](#9-giới-hạn-của-demo-và-khi-lên-production)
+9. [Giới hạn của demo](#9-giới-hạn-của-demo)
 
 ---
 
