@@ -252,8 +252,6 @@ Phải đảm bảo Terminal chạy `firebase emulators:start` vẫn đang mở.
 
 ## 9. Giới hạn của demo
 
-**Giới hạn của demo:**
-
 *Phân quyền và bảo mật*
 - Backend giữ sẵn mật khẩu tài khoản test và nhận `role` qua query chỉ để demo cho nhanh. Ai gọi API cũng có thể chọn role bất kỳ.
 - Chỉ phân quyền theo domain email, chưa phân quyền theo từng người (danh sách email cụ thể hoặc custom claims).
